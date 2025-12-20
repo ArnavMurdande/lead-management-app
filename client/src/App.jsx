@@ -7,6 +7,10 @@ import Leads from './pages/Leads';
 import Users from './pages/Users';
 import Landing from './pages/Landing';
 import Profile from './pages/Profile';
+import Guide from './pages/Guide'; // Import Guide
+
+import CustomCursor from './components/CustomCursor';
+import ScrollProgress from './components/ScrollProgress';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -21,9 +25,13 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <CustomCursor />
+        <ScrollProgress />
+        
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<Landing />} />
+          <Route path="/guide" element={<Guide />} /> {/* Add Route */}
           
           <Route element={
             <ProtectedRoute>

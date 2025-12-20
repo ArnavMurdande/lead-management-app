@@ -1,0 +1,58 @@
+.magic-bento-card {
+  position: relative;
+  background: rgba(13, 22, 41, 0.6); /* Glass background matching app */
+  border-radius: 1rem;
+  overflow: hidden; /* Important to contain the glow */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.magic-bento-content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+}
+
+/* The Spotlight Gradient */
+.magic-bento-spotlight {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    600px circle at var(--mouse-x) var(--mouse-y),
+    var(--spotlight-color),
+    transparent 40%
+  );
+  z-index: 1;
+  transition: opacity 0.3s ease;
+}
+
+/* The Border Glow Gradient */
+.magic-bento-border {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  padding: 1px; /* The width of the border */
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  z-index: 3;
+  background: radial-gradient(
+    400px circle at var(--mouse-x) var(--mouse-y),
+    rgba(var(--glow-color), 1),
+    transparent 40%
+  );
+  transition: opacity 0.3s ease;
+}
