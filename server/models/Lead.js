@@ -16,14 +16,11 @@ const leadSchema = new mongoose.Schema({
     date: { type: Date, default: Date.now },
     author: String
   }],
-  assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
+  assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+}, { 
+  timestamps: true // ✅ This automatically manages createdAt and updatedAt
 });
 
-leadSchema.pre('save', function(next) {
-  this.updatedAt = Date.now();
-  next();
-});
+// ❌ REMOVED: The manual pre('save') hook that was causing issues.
 
 module.exports = mongoose.model('Lead', leadSchema);
