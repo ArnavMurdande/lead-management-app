@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
-import { Users, TrendingUp, CheckCircle, Clock, PieChart as PieIcon, Activity } from 'lucide-react';
+import { Users, TrendingUp, CheckCircle, Clock, PieChart as PieIcon, Activity, ExternalLink } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import MagicBento from '../components/MagicBento';
 
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
@@ -18,19 +19,18 @@ const Dashboard = () => {
         setLoading(false);
       }
     };
-
     fetchStats();
   }, []);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+      <div className="loader">Loading Dashboard...</div>
+    </div>
+  );
 
-  const getStatusCount = (status) => {
-    return stats?.statusDistribution?.find(s => s._id === status)?.count || 0;
-  };
+  const getStatusCount = (status) => stats?.statusDistribution?.find(s => s._id === status)?.count || 0;
+  const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
-
-  // Prepare data for charts
   const statusData = stats?.statusDistribution?.map((item, index) => ({
     name: item._id,
     value: item.count,
@@ -43,52 +43,43 @@ const Dashboard = () => {
   })) || [];
 
   const StatCard = ({ title, value, icon: Icon, color }) => (
-    <div className="card animate-fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '0.5rem' }}>{title}</p>
-          <h3 style={{ fontSize: '1.75rem', fontWeight: 'bold', margin: 0 }}>{value}</h3>
-        </div>
-        <div style={{ 
-          padding: '0.75rem', 
-          borderRadius: '0.75rem', 
-          backgroundColor: `${color}20`,
-          color: color 
-        }}>
-          <Icon size={24} />
+    <MagicBento glowColor={color.replace('#', '').match(/.{1,2}/g).map(hex => parseInt(hex, 16)).join(', ')}>
+      <div style={{ padding: '1.5rem', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '0.5rem' }}>{title}</p>
+            <h3 style={{ fontSize: '1.75rem', fontWeight: 'bold', margin: 0 }}>{value}</h3>
+          </div>
+          <div style={{ 
+            padding: '0.75rem', 
+            borderRadius: '0.75rem', 
+            backgroundColor: `${color}20`,
+            color: color 
+          }}>
+            <Icon size={24} />
+          </div>
         </div>
       </div>
-    </div>
+    </MagicBento>
   );
 
   return (
-    <div className="animate-fade-in">
-      <h2 style={{ fontSize: '1.875rem', fontWeight: 'bold', marginBottom: '2rem' }}>Dashboard Overview</h2>
+    <div className="animate-fade-in" style={{ paddingBottom: '2rem' }}>
+      <header style={{ marginBottom: '2rem' }}>
+        <h2 style={{ fontSize: '1.875rem', fontWeight: 'bold', margin: 0 }}>Dashboard Overview</h2>
+        <p style={{ color: 'var(--text-muted)' }}>Real-time insights into your lead pipeline.</p>
+      </header>
       
+      {/* Top Stats Grid */}
       <div style={{ 
         display: 'grid', 
         gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', 
         gap: '1.5rem',
         marginBottom: '2rem'
       }}>
-        <StatCard 
-          title="Total Leads" 
-          value={stats?.totalLeads || 0} 
-          icon={Users} 
-          color="#6366f1" 
-        />
-        <StatCard 
-          title="New Leads" 
-          value={getStatusCount('New')} 
-          icon={Clock} 
-          color="#3b82f6" 
-        />
-        <StatCard 
-          title="Won Leads" 
-          value={getStatusCount('Won')} 
-          icon={CheckCircle} 
-          color="#22c55e" 
-        />
+        <StatCard title="Total Leads" value={stats?.totalLeads || 0} icon={Users} color="#6366f1" />
+        <StatCard title="New Leads" value={getStatusCount('New')} icon={Clock} color="#3b82f6" />
+        <StatCard title="Won Leads" value={getStatusCount('Won')} icon={CheckCircle} color="#10b981" />
         <StatCard 
           title="Conversion Rate" 
           value={`${stats?.totalLeads ? Math.round((getStatusCount('Won') / stats.totalLeads) * 100) : 0}%`} 
@@ -97,96 +88,121 @@ const Dashboard = () => {
         />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
-        {/* Lead Status Distribution Pie Chart */}
-        <div className="card" style={{ minHeight: '400px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-             <PieIcon size={20} color="var(--primary)" />
-             <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', margin: 0 }}>Lead Status Distribution</h3>
+      {/* Charts Grid */}
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', 
+        gap: '2rem', 
+        marginBottom: '2rem' 
+      }}>
+        <MagicBento>
+          <div style={{ padding: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+               <PieIcon size={20} color="var(--primary)" />
+               <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', margin: 0 }}>Lead Status Distribution</h3>
+            </div>
+            <div style={{ height: '300px', width: '100%' }}>
+              <ResponsiveContainer>
+                <PieChart>
+                  <Pie
+                    data={statusData}
+                    cx="50%" cy="50%"
+                    innerRadius={60} outerRadius={100}
+                    paddingAngle={5} dataKey="value"
+                    label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {statusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderRadius: '8px', border: '1px solid var(--border)', backdropFilter: 'blur(10px)' }}
+                    itemStyle={{ color: '#fff' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-          <div style={{ height: '300px', width: '100%' }}>
-            <ResponsiveContainer>
-              <PieChart>
-                <Pie
-                  data={statusData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
-                >
-                  {statusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} stroke="var(--surface)" />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text)' }} 
-                  itemStyle={{ color: 'var(--text)' }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        </MagicBento>
 
-        {/* Agent Performance Bar Chart */}
-        <div className="card" style={{ minHeight: '400px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-             <Activity size={20} color="var(--primary)" />
-             <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', margin: 0 }}>Agent Performance</h3>
+        <MagicBento>
+          <div style={{ padding: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+               <Activity size={20} color="var(--primary)" />
+               <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', margin: 0 }}>Agent Performance</h3>
+            </div>
+            <div style={{ height: '300px', width: '100%' }}>
+               <ResponsiveContainer>
+                 <BarChart data={agentData} layout="vertical">
+                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
+                   <XAxis type="number" hide />
+                   <YAxis dataKey="name" type="category" width={100} axisLine={false} tickLine={false} style={{ fill: 'var(--text-muted)' }} />
+                   <Tooltip 
+                      cursor={{fill: 'rgba(255,255,255,0.05)'}}
+                      contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderRadius: '8px', border: '1px solid var(--border)', backdropFilter: 'blur(10px)' }}
+                   />
+                   <Bar dataKey="leads" fill="var(--primary)" radius={[0, 4, 4, 0]} barSize={20} />
+                 </BarChart>
+               </ResponsiveContainer>
+            </div>
           </div>
-          <div style={{ height: '300px', width: '100%' }}>
-             <ResponsiveContainer>
-               <BarChart data={agentData} layout="vertical">
-                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
-                 <XAxis type="number" stroke="var(--text-muted)" />
-                 <YAxis dataKey="name" type="category" width={100} stroke="var(--text-muted)" />
-                 <Tooltip 
-                    cursor={{fill: 'var(--border)', opacity: 0.2}}
-                    contentStyle={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text)' }}
-                 />
-                 <Bar dataKey="leads" fill="var(--primary)" radius={[0, 4, 4, 0]} />
-               </BarChart>
-             </ResponsiveContainer>
-          </div>
-        </div>
+        </MagicBento>
       </div>
 
-      {/* Recent Leads Table */}
-      <div className="card">
-        <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1.5rem' }}>Recent Leads</h3>
-        <div className="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Status</th>
-                <th>Assigned To</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {stats?.recentLeads?.map(lead => (
-                <tr key={lead._id}>
-                  <td>{lead.name}</td>
-                  <td>
-                    <span className={`badge badge-${lead.status.toLowerCase()}`}>
-                      {lead.status}
-                    </span>
-                  </td>
-                  <td>{lead.assignedTo?.name || 'Unassigned'}</td>
-                  <td style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                    {new Date(lead.createdAt).toLocaleDateString()}
-                  </td>
+      {/* Recent Leads Fixed Layout */}
+      <MagicBento>
+        <div style={{ padding: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', margin: 0 }}>Recent Leads</h3>
+            <button className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>View All</button>
+          </div>
+          <div className="table-container" style={{ background: 'transparent', border: 'none' }}>
+            <table
+             style={{
+                width: '100%',
+                tableLayout: 'fixed',
+                borderCollapse: 'separate',
+                borderSpacing: '0 0.5rem'
+              }}
+            >
+              <thead>
+                <tr style={{ textAlign: 'left', color: 'var(--text-muted)' }}>
+                  <th style={{ padding: '1rem' }}>Name</th>
+                  <th style={{ padding: '1rem' }}>Status</th>
+                  <th style={{ padding: '1rem' }}>Assigned To</th>
+                  <th style={{ padding: '1rem' }}>Date Added</th>
                 </tr>
-              ))}
-              {!stats?.recentLeads?.length && (
-                 <tr><td colSpan="4" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No leads found</td></tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {stats?.recentLeads?.map(lead => (
+                  <tr key={lead._id} className="table-row-hover" style={{ backgroundColor: 'rgba(255,255,255,0.02)' }}>
+                    <td style={{ padding: '1rem', borderRadius: '8px 0 0 8px' }}>
+                      <div style={{ fontWeight: 500 }}>{lead.name}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{lead.email}</div>
+                    </td>
+                    <td style={{ padding: '1rem' }}>
+                      <span className={`badge badge-${lead.status.toLowerCase()}`} style={{ textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700 }}>
+                        {lead.status}
+                      </span>
+                    </td>
+                    <td style={{ padding: '1rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>
+                          {lead.assignedTo?.name?.charAt(0) || '?'}
+                        </div>
+                        {lead.assignedTo?.name || 'Unassigned'}
+                      </div>
+                    </td>
+                    <td style={{ padding: '1rem', borderRadius: '0 8px 8px 0', color: 'var(--text-muted)' }}>
+                      {new Date(lead.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      </MagicBento>
     </div>
   );
 };
