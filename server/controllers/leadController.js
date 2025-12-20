@@ -176,6 +176,39 @@ exports.addNote = async (req, res) => {
   }
 };
 
+// @desc    Delete a note
+// @route   DELETE /api/leads/:id/note/:noteId
+// @access  Private
+exports.deleteNote = async (req, res) => {
+  try {
+    const { id, noteId } = req.params;
+    const lead = await Lead.findById(id);
+
+    if (!lead) return res.status(404).json({ message: 'Lead not found' });
+
+    // Find the note
+    const note = lead.notes.id(noteId);
+    if (!note) return res.status(404).json({ message: 'Note not found' });
+
+    // Permission Check: Allow only Super Admin or the Note Author to delete
+    if (req.user.role !== 'super-admin' && note.author !== req.user.name) {
+      return res.status(403).json({ message: 'Not authorized to delete this note' });
+    }
+
+    // Remove the note
+    lead.notes.pull(noteId);
+    await lead.save();
+
+    // [LOGGING]
+    await logActivity(req.user._id, 'DELETE_NOTE', `Deleted note from ${lead.name}`, req);
+
+    // Return the updated notes array
+    res.json(lead.notes); 
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // @desc    Import leads from Excel
 // @route   POST /api/leads/import
 // @access  Private

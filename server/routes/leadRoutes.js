@@ -1,10 +1,22 @@
 const express = require('express');
 const router = express.Router();
-const { getLeads, createLead, updateLead, deleteLead, addNote, importLeads, exportLeads, getDashboardStats } = require('../controllers/leadController');
+const { 
+  getLeads, 
+  createLead, 
+  updateLead, 
+  deleteLead, 
+  addNote, 
+  deleteNote, // <--- Added this import
+  importLeads, 
+  exportLeads, 
+  getDashboardStats 
+} = require('../controllers/leadController');
+
 const { protect, authorize } = require('../middleware/authMiddleware');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
 
+// Protect all routes
 router.use(protect);
 
 router.route('/')
@@ -26,5 +38,9 @@ router.route('/:id')
 
 router.route('/:id/note')
   .post(addNote);
+
+// New Route: Delete a specific note
+router.route('/:id/note/:noteId')
+  .delete(deleteNote);
 
 module.exports = router;
