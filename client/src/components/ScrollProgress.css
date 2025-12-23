@@ -1,34 +1,38 @@
 .scroll-track {
     position: fixed;
     top: 20vh;
-    right: 6px; /* Optimized for mobile/tablet margins */
+    right: 6px;
     width: 4px;
     height: 60vh;
-    background-color: rgba(255, 255, 255, 0.1);
-    z-index: 9999; /* Ensure it stays above everything */
+    background-color: rgba(255, 255, 255, 0.05);
+    z-index: 9999;
     border-radius: 4px;
     overflow: hidden;
-    pointer-events: none; /* Allows scrolling through the bar on touch devices */
+    pointer-events: none; /* Critical: Allows clicking elements underneath the scrollbar */
+    backdrop-filter: blur(2px);
 }
 
 .scroll-thumb {
     width: 100%;
     height: 0%;
-    background-color: rgba(255, 255, 255, 0.7);
+    background: linear-gradient(to bottom, #00f3ff, #bc13fe); /* Added gradient for better visibility */
     border-radius: 4px;
     position: relative;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+    will-change: height; /* Performance optimization */
 }
 
+/* Glow effect at the bottom of the thumb */
 .scroll-thumb::after {
     content: '';
     position: absolute;
     bottom: -8px;
     left: 50%;
     transform: translateX(-50%);
-    width: 16px;
-    height: 16px;
-    background-color: rgba(255, 255, 255, 0.7);
+    width: 12px;
+    height: 12px;
+    background-color: #fff;
     border-radius: 50%;
-    filter: blur(5px);
+    filter: blur(6px);
+    opacity: 0.8;
 }

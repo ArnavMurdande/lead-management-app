@@ -7,7 +7,8 @@ const {
   deleteUser, 
   getUserProfile, 
   updateUserProfile,
-  getActivityLogs 
+  getActivityLogs,
+  pingUser // <--- 1. IMPORT THIS
 } = require('../controllers/userController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const multer = require('multer');
@@ -37,6 +38,10 @@ const upload = multer({
 //  ROUTES
 // ==================================================================
 
+// 0. Heartbeat (Active Status)
+// Used by the frontend to keep the user "Online" while working
+router.post('/ping', protect, pingUser); 
+
 // 1. Profile Routes (Self-Service)
 router.get('/profile', protect, getUserProfile);
 router.put('/profile', protect, upload.single('profilePic'), updateUserProfile);
@@ -46,8 +51,8 @@ router.get('/activity', protect, authorize('super-admin'), getActivityLogs);
 
 // 3. User Management (General)
 router.route('/')
-  .get(protect, authorize('super-admin', 'sub-admin'), getUsers) // Sub-admins can still view list
-  .post(protect, authorize('super-admin'), createUser); // <--- FIXED: Only Super Admin can create
+  .get(protect, authorize('super-admin', 'sub-admin'), getUsers) // Sub-admins can view list
+  .post(protect, authorize('super-admin'), createUser); // Only Super Admin can create
 
 // 4. User Management (Specific ID)
 router.route('/:id')

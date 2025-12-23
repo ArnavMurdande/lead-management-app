@@ -57,13 +57,10 @@ exports.updateUserProfile = async (req, res) => {
       // --- IMAGE UPLOAD LOGIC ---
       if (req.file) {
         // Case 1: File uploaded via Multer
-        // Construct the full URL to the file on your server
-        // NOTE: In production (Render/Vercel), you might need a different strategy for file persistence (like S3/Cloudinary)
-        // because Render wipes the disk on redeploy. For demo/local, this is fine.
         const url = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
         user.profilePic = url;
       } else if (req.body.profilePic) {
-        // Case 2: User provided a text URL (e.g., from Google or external link)
+        // Case 2: User provided a text URL
         user.profilePic = req.body.profilePic;
       }
 
@@ -100,6 +97,23 @@ exports.updateUserProfile = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: error.message });
+  }
+};
+
+// ==========================================
+//  NEW: Heartbeat Logic (Active Status)
+// ==========================================
+
+// @desc    Update user's last active timestamp
+// @route   POST /api/users/ping
+// @access  Private
+exports.pingUser = async (req, res) => {
+  try {
+    // We use findByIdAndUpdate for speed
+    await User.findByIdAndUpdate(req.user._id, { lastActive: Date.now() });
+    res.status(200).send('Pong');
+  } catch (error) {
+    res.status(500).json({ message: 'Ping failed' });
   }
 };
 
@@ -205,22 +219,41 @@ exports.updateUser = async (req, res) => {
 exports.deleteUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
-    if (user) {
-      const userName = user.name; // Save name for log
-      await user.deleteOne();
-
-      // [LOGGING] Track Admin deletion
-      await logActivity(
-        req.user._id, 
-        'DELETE_USER', 
-        `Admin deleted user: ${userName}`, 
-        req
-      );
-
-      res.json({ message: 'User removed' });
-    } else {
-      res.status(404).json({ message: 'User not found' });
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
+
+    // --- SAFETY CHECK 1: Prevent Self-Deletion ---
+    // Check if the ID of the user being deleted matches the ID of the requester
+    if (user._id.toString() === req.user._id.toString()) {
+        return res.status(400).json({ message: "You cannot delete your own account." });
+    }
+
+    // --- SAFETY CHECK 2: Prevent Deleting Last Super Admin ---
+    // If trying to delete a Super Admin, ensure at least one other exists
+    if (user.role === 'super-admin') {
+        const superAdminCount = await User.countDocuments({ role: 'super-admin' });
+        if (superAdminCount <= 1) {
+            return res.status(400).json({ 
+                message: "Cannot delete the last Super Admin. Promote another user first." 
+            });
+        }
+    }
+
+    const userName = user.name; // Save name for log
+    await user.deleteOne();
+
+    // [LOGGING] Track Admin deletion
+    await logActivity(
+      req.user._id, 
+      'DELETE_USER', 
+      `Admin deleted user: ${userName}`, 
+      req
+    );
+
+    res.json({ message: 'User removed' });
+    
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

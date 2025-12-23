@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
-import LiquidEther from '../components/LiquidEther';
+import Squares from '../components/Squares'; // <--- CHANGED THIS
 import MagicBento from '../components/MagicBento';
 import textLogo from '../assets/Text.png';
 import api from '../utils/api';
@@ -57,12 +57,14 @@ const Login = () => {
     <div style={{ position: 'relative', minHeight: '100vh', background: 'var(--background)', overflow: 'hidden' }}>
       
       {/* Background Animation */}
-      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, opacity: 0.6 }}>
-        <LiquidEther
-            colors={['#02040a', '#00f3ff', '#bc13fe']}
-            mouseForce={20}
-            cursorSize={120}
-            isViscous={false}
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0 }}>
+        {/* REPLACED LIQUID ETHER WITH SQUARES */}
+        <Squares 
+            speed={0.5} 
+            squareSize={40}
+            direction='diagonal' 
+            borderColor='rgba(255, 255, 255, 0.12)' 
+            hoverFillColor='#00c3ffff'
         />
       </div>
 
@@ -80,9 +82,11 @@ const Login = () => {
                         src={textLogo} 
                         alt="LeadFlow" 
                         style={{ 
-                            height: '80px', 
+                            height: '50px', // Adjusted height for better scaling
+                            width: 'auto',
+                            maxWidth: '100%',
                             objectFit: 'contain',
-                            filter: 'brightness(1.2) drop-shadow(0 0 10px rgba(0,243,255,0.3))' 
+                            filter: 'drop-shadow(0 0 10px rgba(0,243,255,0.3))' 
                         }} 
                     />
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.5rem' }}>

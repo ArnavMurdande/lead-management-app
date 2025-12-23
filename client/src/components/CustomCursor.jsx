@@ -1,15 +1,28 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const CustomCursor = () => {
   const canvasRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  // Handle Resize to detect mobile view
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
+    // If on mobile, do not initialize the canvas animation
+    if (isMobile) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     
     const ctx = canvas.getContext('2d');
     let animationFrameId;
-    let mouseMoved = false;
 
     // Configuration parameters
     const pointer = {
@@ -18,7 +31,7 @@ const CustomCursor = () => {
     };
     
     const params = {
-      pointsNumber: 20, // Reduced from 40 to shorten the tail
+      pointsNumber: 20, 
       widthFactor: 0.6,
       mouseThreshold: 0.6,
       spring: 0.4,
@@ -40,19 +53,16 @@ const CustomCursor = () => {
     };
 
     const handleMouseMove = (e) => {
-      mouseMoved = true;
       // Use clientX/Y for fixed canvas to handle scrolling correctly
       updateMousePosition(e.clientX, e.clientY);
     };
 
     const handleTouchMove = (e) => {
-      mouseMoved = true;
       const touch = e.targetTouches[0];
       updateMousePosition(touch.clientX, touch.clientY);
     };
 
     const handleTouchStart = (e) => {
-      mouseMoved = true;
       const touch = e.targetTouches[0];
       updateMousePosition(touch.clientX, touch.clientY);
     };
@@ -67,8 +77,7 @@ const CustomCursor = () => {
     };
 
     // Animation Loop
-    const update = (t) => {
-
+    const update = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.strokeStyle = '#ffffff'; // Set cursor color to white
       
@@ -106,12 +115,12 @@ const CustomCursor = () => {
     window.addEventListener("click", handleClick);
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("touchmove", handleTouchMove);
-    window.addEventListener("touchstart", handleTouchStart); // Handle initial touch
+    window.addEventListener("touchstart", handleTouchStart); 
     window.addEventListener("resize", setupCanvas);
 
     // Initial setup
     setupCanvas();
-    update(0);
+    update();
 
     // Cleanup
     return () => {
@@ -122,7 +131,10 @@ const CustomCursor = () => {
       window.removeEventListener("resize", setupCanvas);
       cancelAnimationFrame(animationFrameId);
     };
-  }, []);
+  }, [isMobile]); // Re-run effect if isMobile changes
+
+  // Don't render anything if on mobile
+  if (isMobile) return null;
 
   return (
     <canvas 
@@ -133,7 +145,7 @@ const CustomCursor = () => {
         left: 0, 
         width: '100%', 
         height: '100%', 
-        pointerEvents: 'none', // Crucial: lets clicks pass through to buttons
+        pointerEvents: 'none', 
         zIndex: 9999 
       }} 
     />

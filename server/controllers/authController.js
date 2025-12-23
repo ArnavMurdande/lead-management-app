@@ -8,7 +8,8 @@ const { logActivity } = require('../utils/logger'); // Import Logger
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+  // CHANGE '30d' TO '24h' or '12h'
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '12h' }); 
 };
 
 // --- Standard Login ---

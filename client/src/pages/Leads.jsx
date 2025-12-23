@@ -254,10 +254,10 @@ const Leads = () => {
         /* FIX: Increased z-index to 9999 to ensure modal appears above navbars/headers */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 9999; padding: 1rem; }
         
-        .modal-content { background: #1e293b; width: 100%; max-width: 950px; height: 85vh; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        /* Updated height to 80vh for desktop (was 85vh) */
+        .modal-content { background: #1e293b; width: 100%; max-width: 950px; height: 70vh; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
         
         .modal-header { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; background: #0f172a; }
-        /* FIX: Changed fontSize (JS) to font-size (CSS) */
         .modal-title { margin: 0; font-size: 1.25rem; font-weight: 600; color: white; }
         
         .modal-body { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 0; overflow: hidden; flex: 1; }
@@ -308,7 +308,8 @@ const Leads = () => {
           .form-grid { grid-template-columns: 1fr !important; gap: 1rem; }
           .form-group.full { grid-column: span 1 !important; }
           
-          .modal-content { height: 95vh; margin-top: 1rem; }
+          /* Updated for mobile: Pushed down by 4.5rem and auto height */
+          .modal-content { height: auto; max-height: 85vh; margin-top: 4.5rem; }
           .modal-header { padding: 1rem; }
         }
       `}</style>

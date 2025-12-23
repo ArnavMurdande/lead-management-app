@@ -13,8 +13,9 @@ const userSchema = new mongoose.Schema({
   phone: { type: String, default: "" },
   location: { type: String, default: "" },
   dob: { type: Date }, 
-  // --- ADDED THIS FIELD ---
   lastLogin: { type: Date, default: Date.now },
+  // --- ADD THIS ---
+  lastActive: { type: Date, default: null }, 
   createdAt: { type: Date, default: Date.now },
 });
 

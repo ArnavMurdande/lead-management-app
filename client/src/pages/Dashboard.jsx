@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
-import { Users, TrendingUp, CheckCircle, Clock, PieChart as PieIcon, Activity, ExternalLink } from 'lucide-react';
+import { Users, TrendingUp, CheckCircle, Clock, PieChart as PieIcon, Activity } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import MagicBento from '../components/MagicBento';
 
@@ -64,19 +64,68 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="animate-fade-in" style={{ paddingBottom: '2rem' }}>
-      <header style={{ marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '1.875rem', fontWeight: 'bold', margin: 0 }}>Dashboard Overview</h2>
-        <p style={{ color: 'var(--text-muted)' }}>Real-time insights into your lead pipeline.</p>
+    <div className="dashboard-container animate-fade-in">
+      <style>{`
+        .dashboard-container { padding-bottom: 2rem; }
+        .dashboard-header { margin-bottom: 2rem; }
+        .dashboard-header h2 { font-size: 1.875rem; font-weight: bold; margin: 0; }
+        .dashboard-header p { color: var(--text-muted); }
+        
+        .stats-grid { 
+          display: grid; 
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+          gap: 1.5rem; 
+          margin-bottom: 2rem; 
+        }
+
+        /* Responsive Charts Grid */
+        .charts-grid { 
+          display: grid; 
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+          gap: 2rem; 
+          margin-bottom: 2rem; 
+        }
+
+        .chart-container { padding: 1.5rem; }
+        .chart-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
+        .chart-header h3 { font-size: 1.25rem; font-weight: bold; margin: 0; }
+        
+        /* Table Scroll Fix */
+        .table-scroll-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 1rem; }
+        .dashboard-table { width: 100%; min-width: 600px; table-layout: fixed; border-collapse: separate; border-spacing: 0 0.5rem; }
+        .dashboard-table th { padding: 1rem; text-align: left; color: var(--text-muted); }
+        .dashboard-table td { padding: 1rem; }
+        .dashboard-table tr { background-color: rgba(255,255,255,0.02); transition: background 0.2s; }
+        .dashboard-table tr:hover { background-color: rgba(255,255,255,0.05); }
+
+        /* VIEW ALL BUTTON STYLES */
+        .btn-view-all {
+            border-radius: 50px !important; /* Rounded */
+            transition: all 0.3s ease;
+            border: 1px solid var(--primary);
+            padding: 0.5rem 1.5rem;
+        }
+        .btn-view-all:hover {
+            background-color: #ccff00 !important; /* Neon Green */
+            color: black !important;
+            border-color: #ccff00 !important;
+            box-shadow: 0 0 15px rgba(204, 255, 0, 0.4);
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+          .charts-grid { grid-template-columns: 1fr; }
+          .dashboard-header h2 { font-size: 1.5rem; }
+        }
+      `}</style>
+
+      <header className="dashboard-header">
+        <h2>Dashboard Overview</h2>
+        <p>Real-time insights into your lead pipeline.</p>
       </header>
       
       {/* Top Stats Grid */}
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', 
-        gap: '1.5rem',
-        marginBottom: '2rem'
-      }}>
+      <div className="stats-grid">
         <StatCard title="Total Leads" value={stats?.totalLeads || 0} icon={Users} color="#6366f1" />
         <StatCard title="New Leads" value={getStatusCount('New')} icon={Clock} color="#3b82f6" />
         <StatCard title="Won Leads" value={getStatusCount('Won')} icon={CheckCircle} color="#10b981" />
@@ -89,17 +138,12 @@ const Dashboard = () => {
       </div>
 
       {/* Charts Grid */}
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', 
-        gap: '2rem', 
-        marginBottom: '2rem' 
-      }}>
+      <div className="charts-grid">
         <MagicBento>
-          <div style={{ padding: '1.5rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+          <div className="chart-container">
+            <div className="chart-header">
                <PieIcon size={20} color="var(--primary)" />
-               <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', margin: 0 }}>Lead Status Distribution</h3>
+               <h3>Lead Status Distribution</h3>
             </div>
             <div style={{ height: '300px', width: '100%' }}>
               <ResponsiveContainer>
@@ -126,22 +170,35 @@ const Dashboard = () => {
         </MagicBento>
 
         <MagicBento>
-          <div style={{ padding: '1.5rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+          <div className="chart-container">
+            <div className="chart-header">
                <Activity size={20} color="var(--primary)" />
-               <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', margin: 0 }}>Agent Performance</h3>
+               <h3>Agent Performance</h3>
             </div>
             <div style={{ height: '300px', width: '100%' }}>
                <ResponsiveContainer>
-                 <BarChart data={agentData} layout="vertical">
+                 <BarChart data={agentData} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
                    <XAxis type="number" hide />
-                   <YAxis dataKey="name" type="category" width={100} axisLine={false} tickLine={false} style={{ fill: 'var(--text-muted)' }} />
+                   <YAxis 
+                      dataKey="name" 
+                      type="category" 
+                      width={120} 
+                      axisLine={false} 
+                      tickLine={false} 
+                      style={{ fill: 'var(--text-muted)', fontSize: '0.85rem' }} 
+                   />
                    <Tooltip 
                       cursor={{fill: 'rgba(255,255,255,0.05)'}}
                       contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderRadius: '8px', border: '1px solid var(--border)', backdropFilter: 'blur(10px)' }}
                    />
-                   <Bar dataKey="leads" fill="var(--primary)" radius={[0, 4, 4, 0]} barSize={20} />
+                   {/* MODIFIED: Rounded Corners & Thicker Bars */}
+                   <Bar 
+                     dataKey="leads" 
+                     fill="var(--primary)" 
+                     radius={[0, 12, 12, 0]} 
+                     barSize={24} 
+                   />
                  </BarChart>
                </ResponsiveContainer>
             </div>
@@ -154,38 +211,32 @@ const Dashboard = () => {
         <div style={{ padding: '1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', margin: 0 }}>Recent Leads</h3>
-            <button className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>View All</button>
+            <button className="btn btn-primary btn-view-all">View All</button>
           </div>
-          <div className="table-container" style={{ background: 'transparent', border: 'none' }}>
-            <table
-             style={{
-                width: '100%',
-                tableLayout: 'fixed',
-                borderCollapse: 'separate',
-                borderSpacing: '0 0.5rem'
-              }}
-            >
+          
+          <div className="table-scroll-wrapper">
+            <table className="dashboard-table">
               <thead>
-                <tr style={{ textAlign: 'left', color: 'var(--text-muted)' }}>
-                  <th style={{ padding: '1rem' }}>Name</th>
-                  <th style={{ padding: '1rem' }}>Status</th>
-                  <th style={{ padding: '1rem' }}>Assigned To</th>
-                  <th style={{ padding: '1rem' }}>Date Added</th>
+                <tr>
+                  <th>Name</th>
+                  <th>Status</th>
+                  <th>Assigned To</th>
+                  <th>Date Added</th>
                 </tr>
               </thead>
               <tbody>
                 {stats?.recentLeads?.map(lead => (
-                  <tr key={lead._id} className="table-row-hover" style={{ backgroundColor: 'rgba(255,255,255,0.02)' }}>
-                    <td style={{ padding: '1rem', borderRadius: '8px 0 0 8px' }}>
+                  <tr key={lead._id}>
+                    <td style={{ borderRadius: '8px 0 0 8px' }}>
                       <div style={{ fontWeight: 500 }}>{lead.name}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{lead.email}</div>
                     </td>
-                    <td style={{ padding: '1rem' }}>
+                    <td>
                       <span className={`badge badge-${lead.status.toLowerCase()}`} style={{ textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700 }}>
                         {lead.status}
                       </span>
                     </td>
-                    <td style={{ padding: '1rem' }}>
+                    <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>
                           {lead.assignedTo?.name?.charAt(0) || '?'}
@@ -193,7 +244,7 @@ const Dashboard = () => {
                         {lead.assignedTo?.name || 'Unassigned'}
                       </div>
                     </td>
-                    <td style={{ padding: '1rem', borderRadius: '0 8px 8px 0', color: 'var(--text-muted)' }}>
+                    <td style={{ borderRadius: '0 8px 8px 0', color: 'var(--text-muted)' }}>
                       {new Date(lead.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                     </td>
                   </tr>
